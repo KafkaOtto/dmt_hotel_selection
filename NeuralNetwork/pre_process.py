@@ -27,6 +27,43 @@ def operate_missing_value(train_df_, test_df_):
             test_df_[feat] = test_df_[feat].fillna(mean_)
     return train_df_, test_df_
 
+def add_label(df_in):
+    df_in['label'] = 2 * df_in['booking_bool'] + (df_in['click_bool'] & ~df_in['booking_bool'])
+    return df_in
+
+def normalized_categorical_features(train_df_in, test_df_in):
+    train_test_categorial = pd.concat([train_df_in[categorical_features], test_df_in[categorical_features]])
+    for feat in categorical_features:
+        lbl_enc = LabelEncoder()
+        lbl_enc = lbl_enc.fit(train_test_categorial[feat].values)
+        train_df_in[feat] = lbl_enc.transform(train_df_in[feat].values)
+        test_df_in[feat] = lbl_enc.transform(test_df_in[feat].values)
+    return train_df_in, test_df_in
+
+
+def normalized_numerical_features(train_df_in, test_df_in):
+    # Concatenate train and test dataframes
+    train_test_numerical = pd.concat([train_df_in[numerical_features], test_df_in[numerical_features]], axis=0)
+    # Initialize StandardScaler
+    stnd_scl = StandardScaler()
+    # Fit the StandardScaler on the concatenated dataframe
+    stnd_scl.fit(train_test_numerical)
+    # Transform train and test numerical features
+    train_numerical_features = stnd_scl.transform(train_df_in[numerical_features])
+    test_numerical_features = stnd_scl.transform(test_df_in[numerical_features])
+    # Assign transformed features back to dataframes
+    train_df_in.loc[:, numerical_features] = train_numerical_features
+    test_df_in.loc[:, numerical_features] = test_numerical_features
+
+    return train_df_in, test_df_in
+
+def split_train_eval(train_df_in):
+    splitter = GroupShuffleSplit(n_splits=1, test_size=0.2, random_state=123)
+    split = splitter.split(train_df_in, groups=train_df_in['srch_id'])
+    train_inds, eval_inds = next(split)
+    train_data_out = train_df_in.iloc[train_inds]
+    eval_data_out = train_df_in.iloc[eval_inds]
+    return train_data_out, eval_data_out
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -53,6 +90,7 @@ if __name__ == '__main__':
         lbl_enc = lbl_enc.fit(train_test_categorial[feat].values)
         train_df[feat] = lbl_enc.transform(train_df[feat].values)
         test_df[feat] = lbl_enc.transform(test_df[feat].values)
+        print(f"for feat: {feat}, unique value for train: {train_df[feat].unique()}, for test: {test_df[feat].unique()}")
     train_test_numerical = pd.concat([train_df[numerical_features], test_df[numerical_features]])
     stnd_scl = StandardScaler()
     stnd_scl = stnd_scl.fit(train_test_numerical)

@@ -1,7 +1,7 @@
 import argparse
 import torch
 from utils import seed_everything
-from model import AdaptedGateCorssNetwork
+from model import AdaptedGateCorssNetwork, FeedForwardNN
 import numpy as np
 from sklearn import metrics
 from common import categorical_features, numerical_features, drop_columns, training_extras
@@ -24,15 +24,12 @@ def train_network(model, train_loader, val_loader, loss_fn, optimizer, epochs, s
         # valid_auc = 0.0
 
         model.train()
-        for batch in tqdm(train_loader):
+        for y, cont_x, cat_x in tqdm(train_loader):
             optimizer.zero_grad()
 
-            output = model(batch['data'][0].to(device,
-                                               dtype=torch.long),
-                           batch['data'][1].to(device,
-                                               dtype=torch.float))
+            output = model(cont_x.to(device), cat_x.to(device))
 
-            target = batch['target'].unsqueeze(1).to(device, dtype=torch.float)
+            target = y.to(device, dtype=torch.float)
 
             loss = loss_fn(output, target)
 
@@ -41,26 +38,19 @@ def train_network(model, train_loader, val_loader, loss_fn, optimizer, epochs, s
             # train_auc += metrics.roc_auc_score(batch['target'].cpu().numpy(),
             #                                    output.detach().cpu().numpy())
 
-            train_loss += loss.item() * batch['data'][0].size(0)  #!!!
+            train_loss += loss.item()
 
         model.eval()
-        for batch in tqdm(val_loader):
-            output = model(batch['data'][0].to(device,
-                                               dtype=torch.long),
-                           batch['data'][1].to(device,
-                                               dtype=torch.float))
-            target = batch['target'].unsqueeze(1).to(device, dtype=torch.float)
+        for y, cont_x, cat_x in tqdm(eval_loader):
+            output = model(cont_x.to(device), cat_x.to(device))
+
+            target = y.to(device, dtype=torch.float)
 
             loss = loss_fn(output, target)
 
             # valid_auc += metrics.roc_auc_score(batch['target'].cpu().numpy(),
             #                                    output.detach().cpu().numpy())
-            valid_loss += loss.item() * batch['data'][0].size(0)
-        train_loss = np.sqrt(train_loss / len(train_loader.sampler.indices))
-        valid_loss = np.sqrt(valid_loss / len(val_loader.sampler.indices))
-
-        # train_auc = train_auc / len(train_loader)
-        # valid_auc = valid_auc / len(val_loader)
+            valid_loss += loss.item()
 
         train_losses.append(train_loss)
         valid_losses.append(valid_loss)
@@ -96,6 +86,9 @@ if __name__ == '__main__':
     train_df, eval_df, test_df = load_data(path)
     cat_dim, train_loader, eval_loader, test_loader = get_search_dataloader(train_df, eval_df, test_df, args['batch'])
 
+    # model = FeedForwardNN(cat_dim, no_of_cont=len(numerical_features), lin_layer_sizes=[50, 100],
+    #                       output_size=1, emb_dropout=0.04,
+    #                       lin_layer_dropouts=[0.001, 0.01])
 
     model = AdaptedGateCorssNetwork(cat_dim, no_of_numerical=len(numerical_features),
                                     )
