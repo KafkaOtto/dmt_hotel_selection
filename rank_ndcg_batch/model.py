@@ -7,6 +7,7 @@ from attr import asdict
 from rank_ndcg_batch.models.transformer import make_transformer
 from rank_ndcg_batch.utils.python_utils import instantiate_class
 from rank_ndcg_batch.data.data_loading import PADDED_CAT_VALUE
+from rank_ndcg_batch.utils.common import get_n_features
 
 class EmbeddingLayer(nn.Module):
     def __init__(self, emb_dims, no_of_numerical=None, emb_dropout=0.0):
@@ -188,7 +189,7 @@ def make_model(fc_model, transformer, post_model, emb_dims, no_of_numerical):
     """
     # no_of_embs = sum([y for x, y in emb_dims])
     # n_out = no_of_embs + no_of_numerical
-    n_out = 45
+    n_out = get_n_features()
     if fc_model:
         fc_model = FCModel(**fc_model, emb_dims=emb_dims, n_out=n_out)  # type: ignore
     d_model = n_out if not fc_model else fc_model.output_size

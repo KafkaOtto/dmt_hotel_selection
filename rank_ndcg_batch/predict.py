@@ -10,7 +10,7 @@ from functools import partial
 from pprint import pformat
 from torch import optim
 from rank_ndcg_batch.utils.model_utils import get_torch_device, load_state_dict_from_file
-from rank_ndcg_batch.data.data_loading import load_search_dataset_role, create_data_loaders
+from rank_ndcg_batch.data.data_loading import create_data_loaders
 from rank_ndcg_batch.utils.common import get_n_numerical, emb_dims
 from model import make_model
 from rank_ndcg_batch.utils.logging_r import  init_logger
@@ -26,7 +26,7 @@ def parse_args() -> Namespace:
     return parser.parse_args()
 
 
-def run():
+def predict():
     # reproducibility
     torch.manual_seed(42)
     torch.cuda.manual_seed_all(42)
@@ -46,14 +46,9 @@ def run():
 
     # train_ds, val_ds
     # max 38
-    test_ds = load_search_dataset_role(
-        role="test",
-        input_path=config.data.path,
-        slate_length=config.data.slate_length
-    )
+    test_ds = None
 
-    test_dl = DataLoader(test_ds, batch_size=config.data.batch_size, num_workers=config.data.num_workers, shuffle=False)
-
+    test_dl = None
     # gpu support
     dev = get_torch_device()
     logger.info("Model training will execute on {}".format(dev.type))
@@ -72,4 +67,4 @@ def run():
 
 
 if __name__ == "__main__":
-    run()
+    predict()
