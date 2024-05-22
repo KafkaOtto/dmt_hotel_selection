@@ -91,6 +91,54 @@ def normalize_features(input_df, group_key, target_column, take_log10=False):
     gc.collect()
     return df_merge
 
+# def normalize_features(input_df, group_key, target_column, take_log10=False):
+#     # For numerical stability
+#     epsilon = 1e-4
+#
+#     # Function to handle division by zero
+#     def safe_divide(x, y):
+#         return x / (y + epsilon)
+#
+#     # Function to detect and handle invalid values
+#     def detect_invalid_values(df, column):
+#         invalid_rows = df[df[column].isnull()]
+#         if not invalid_rows.empty:
+#             print(f"Warning: Invalid values detected in column '{column}': {len(invalid_rows)} rows.")
+#
+#     detect_invalid_values(input_df, target_column)
+#
+#     if take_log10:
+#         input_df[target_column] = np.log10(input_df[target_column] + epsilon)
+#
+#     methods = ["mean", "std"]
+#     df_grouped = input_df.groupby(group_key)[target_column].agg(methods)
+#
+#     # Handle case when std is 0 (division by zero)
+#     df_grouped["std"] = df_grouped["std"].replace(0, epsilon)
+#
+#     col = {method: f"{target_column}_{method}" for method in methods}
+#     df_grouped.rename(columns=col, inplace=True)
+#
+#     df_merge = input_df.merge(df_grouped.reset_index(), on=group_key)
+#
+#     detect_invalid_values(df_merge, target_column + "_mean")
+#     detect_invalid_values(df_merge, target_column + "_std")
+#
+#     df_merge[target_column + "_norm_by_" + group_key] = safe_divide(
+#         df_merge[target_column] - df_merge[target_column + "_mean"],
+#         df_merge[target_column + "_std"]
+#     )
+#
+#     median_value = df_merge[target_column + "_norm_by_" + group_key].median()
+#     df_merge[target_column + "_norm_by_" + group_key].fillna(median_value)
+#
+#     df_merge.drop(labels=[col["mean"], col["std"]], axis=1, inplace=True)
+#
+#     detect_invalid_values(df_merge, target_column + "_norm_by_" + group_key)
+#
+#     gc.collect()
+#     return df_merge
+
 def input_estimated_position(training_data, srch_id_dest_id_dict):
     # Merge the estimated positions into the training data
     training_data = training_data.merge(

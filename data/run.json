@@ -1,0 +1,61 @@
+{
+  "model": {
+    "fc_model": {
+      "sizes": [
+        88
+      ],
+      "input_norm": false,
+      "activation": null,
+      "dropout": 0.5
+    },
+    "transformer": {
+      "N": 2,
+      "d_ff": 88,
+      "h": 8,
+      "positional_encoding": {
+        "strategy": "learned",
+        "max_indices": 38
+      },
+      "dropout": 0.5
+    },
+    "post_model": {
+      "d_output": 1
+    }
+  },
+  "data":
+  {
+    "path": "/Users/zhinuanguo/vu_projects/period5/data_mining_technique/assignments/assignment2/code/ExpediaPersonalizedSortCompetition/data/",
+    "validation_ds_role": "eval",
+    "num_workers": 1,
+    "batch_size": 200,
+    "slate_length": 38
+  },
+  "optimizer": {
+    "name": "Adam",
+    "args": {
+      "lr": 0.001
+    }
+  },
+  "lr_scheduler": {
+    "name": "StepLR",
+    "args": {
+      "step_size": 3,
+      "gamma": 0.5
+    }
+  },
+  "training": {
+    "epochs": 20,
+    "gradient_clipping_norm": null,
+    "early_stopping_patience": 1
+  },
+  "metrics": ["ndcg_38"],
+  "loss": {
+    "name": "lambdaLoss",
+    "args": {
+      "weighing_scheme": "ndcgLoss2_scheme",
+      "sigma": 1.0,
+      "k": 25
+    }
+  },
+"val_metric": "ndcg_38"
+ }

@@ -9,6 +9,8 @@ categorical_features = [
     "bool_same_country",
     "prop_country_id", "prop_starrating", "prop_review_score",
     "prop_brand_bool", "promotion_flag",
+    "visitor_location_country_id",
+    "srch_destination_id",
     "srch_saturday_night_bool"
 ]
 
@@ -20,11 +22,19 @@ hotel_column = 'prop_id'
 
 numerical_features = [
     "starrating_diff", "usd_diff", "ad_vs_real",
-    "avg_comp_rate", "roomcount_bookwindow", "adultcount_childrencount",
-    "dayofweek", "month", "hour",
+    "avg_comp_rate",
+    "avg_rate_percent_diff",
+    "roomcount_bookwindow", "adultcount_childrencount",
+    "dayofweek",
+    "month",
+    "hour",
      "prop_location_score1",
-    "prop_location_score2", "prop_log_historical_price", "price_usd", "srch_length_of_stay",
-     "srch_query_affinity_score", "booked_perc", "clicked_perc", "orig_destination_distance",
+    "prop_location_score2", "prop_log_historical_price",
+    "price_usd",
+    "visitor_hist_adr_usd",
+    "srch_length_of_stay",
+     "srch_query_affinity_score",
+    "booked_perc", "clicked_perc", "orig_destination_distance",
 'MEAN_prop_id_price_usd_',
  'SUBSTRACT_price_usd_MEAN_', 'MEAN_srch_id_prop_starrating_',
  'SUBSTRACT_prop_starrating_MEAN_', 'MEAN_srch_id_prop_location_score2_',
@@ -34,9 +44,26 @@ numerical_features = [
  'MEAN_srch_destination_id_price_usd_', 'MEAN_srch_id_prop_review_score_',
  'SUBSTRACT_prop_review_score_MEAN_', 'MEAN_srch_id_promotion_flag_',
  'SUBSTRACT_promotion_flag_MEAN_', "estimated_position",
-    'price_usd_norm_by_srch_id',
-    # 'price_usd_norm_by_prop_id', 'prop_starrating_norm_by_srch_id',
-    # 'prop_location_score2_norm_by_srch_id', 'prop_location_score1_norm_by_srch_id', 'prop_review_score_norm_by_srch_id',
+    # 'price_usd_norm_by_srch_destination_id',
+'price_usd_norm_by_srch_id',
+    # 'prop_location_score2_norm_by_srch_destination_id',
+    # 'prop_location_score1_norm_by_srch_destination_id',
+    # 'prop_review_score_norm_by_srch_destination_id',
+# 'prop_starrating_norm_by_srch_id',
+    # 'prop_location_score2_norm_by_prop_id',
+    # 'prop_location_score1_norm_by_prop_id',
+    # 'prop_review_score_norm_by_prop_id',
+    # 'price_usd_norm_by_prop_id',
+# 'price_usd_norm_by_srch_id',
+#     'prop_starrating_norm_by_srch_id',
+#     'prop_location_score2_norm_by_srch_id',
+#     'prop_location_score1_norm_by_srch_id',
+#     'prop_review_score_norm_by_srch_id',
+'price_usd_norm_by_srch_destination_id',
+    # 'prop_starrating_norm_by_prop_country_id',
+    # 'prop_location_score2_norm_by_prop_country_id',
+    # 'prop_location_score1_norm_by_prop_country_id',
+    # 'prop_review_score_norm_by_prop_country_id',
 
 ]
 
@@ -45,7 +72,9 @@ training_extras = [
 ]
 
 drop_columns = [
-    "srch_id", "date_time", "visitor_location_country_id", "prop_id", "srch_destination_id"
+    "srch_id", "date_time", "prop_id",
+    # "visitor_location_country_id",
+    # "srch_destination_id",
 ]
 
 emb_dims = [[35, 18], [173, 86], [7, 7], [12, 6], [3, 3], [3, 3], [3, 3], [3, 3], [5, 5], [5, 5], [5, 5], [5, 5], [5, 5], [5, 5], [5, 5], [5, 5], [5, 5], [5, 5], [5, 5], [5, 5], [5, 5], [5, 5], [5, 5], [5, 5]]
@@ -75,13 +104,51 @@ def normalized_before_aggreation(data_for_training):
         target_column="price_usd",
         take_log10=True,
     )
+    data_for_training = normalize_features(
+        data_for_training,
+        group_key="visitor_location_country_id",
+        target_column="visitor_hist_adr_usd",
+        take_log10=True,
+    )
+    data_for_training = normalize_features(
+        data_for_training,
+        group_key="srch_destination_id",
+        target_column="price_usd",
+        take_log10=False,
+    )
     # price_usd_norm_by_prop_id
     # data_for_training = normalize_features(
     #     data_for_training, group_key="prop_id", target_column="price_usd", take_log10=True,
     # )
     # prop_starrating_norm_by_srch_id
     # data_for_training = normalize_features(
-    #     data_for_training, group_key="srch_id", target_column="prop_starrating", take_log10=True,
+    #     data_for_training, group_key="srch_destination_id", target_column="prop_starrating",
+    # )
+    # data_for_training = normalize_features(
+    #     data_for_training, group_key="prop_id", target_column="prop_starrating", take_log10=True,
+    # )
+    # data_for_training = normalize_features(
+    #     data_for_training, group_key="prop_id", target_column="prop_location_score2", take_log10=True,
+    # )
+    # data_for_training = normalize_features(
+    #     data_for_training, group_key="prop_id", target_column="prop_location_score1", take_log10=True,
+    # )
+    # data_for_training = normalize_features(
+    #     data_for_training, group_key="prop_id", target_column="prop_review_score", take_log10=True,
+    # )
+    # data_for_training = normalize_features(
+    #     data_for_training, group_key="srch_id", target_column="prop_starrating",
+    # )
+    # data_for_training = normalize_features(
+    #     data_for_training, group_key="srch_id", target_column="prop_location_score2", take_log10=False,
+    # )
+    # prop_location_score1_norm_by_srch_id
+    # data_for_training = normalize_features(
+    #     data_for_training, group_key="srch_id", target_column="prop_location_score1", take_log10=False,
+    # )
+    # # prop_review_score_norm_by_srch_id
+    # data_for_training = normalize_features(
+    #     data_for_training, group_key="srch_id", target_column="prop_review_score", take_log10=False,
     # )
     return data_for_training
 
@@ -146,7 +213,24 @@ def aggreated_columns(data_for_training):
         transform_methods={"mean": ["substract"]},
     )
     return data_for_training
+def fill_nan_1(train_df, test_df):
+    # Select only the necessary columns for calculating means
+    combined_cols = ['prop_id'] + ["srch_query_affinity_score", "orig_destination_distance",
+                                   "prop_review_score", "prop_location_score2",
+                                   "visitor_hist_starrating", "visitor_hist_adr_usd"]
+    combined_df = pd.concat([train_df[combined_cols], test_df[combined_cols]], ignore_index=True)
 
+    # For each feature, fill NaNs with corresponding values grouped by prop_id
+    for feature in ["srch_query_affinity_score", "orig_destination_distance", "prop_review_score",
+                    "prop_location_score2", "visitor_hist_starrating", "visitor_hist_adr_usd"]:
+        # Calculate means based on the combined dataframe
+        prop_means = combined_df.groupby('prop_id')[feature].mean()
+        # Fill NaNs in train_df based on prop_means
+        train_df[feature] = train_df.apply(lambda row: row[feature] if pd.notna(row[feature]) else prop_means[row['prop_id']], axis=1)
+        # Fill NaNs in test_df based on prop_means
+        test_df[feature] = test_df.apply(lambda row: row[feature] if pd.notna(row[feature]) else prop_means[row['prop_id']], axis=1)
+    gc.collect()
+    return train_df, test_df
 def fill_nan(df_):
     df_['srch_query_affinity_score'] = np.exp(df_['srch_query_affinity_score']) #this is in log terms originally, so we bring it back to normal counts
     df_["srch_query_affinity_score"] = df_["srch_query_affinity_score"].fillna(0) #impute it to 0
@@ -182,7 +266,8 @@ def add_extra_features(df_):
 
 
     df_["starrating_diff"] = abs(df_["visitor_hist_starrating"] - df_["prop_starrating"])
-    df_["usd_diff"] = abs(np.log10(df_["visitor_hist_adr_usd"]) - np.log10(df_["price_usd"]))
+    epsilon = 1e-4
+    df_["usd_diff"] = df_["visitor_hist_adr_usd"]- df_["price_usd"]
     df_ = df_.replace([np.inf, -np.inf], np.nan)
     df_ = df_.fillna(value={"starrating_diff": 6, "usd_diff": 1.1})
     df_['ad_vs_real'] = df_['prop_starrating'] - df_['prop_review_score']
@@ -190,6 +275,11 @@ def add_extra_features(df_):
     df_ = df_.fillna(value = {"avg_comp_rate": 0})
     df_.drop(columns=['comp1_rate', 'comp2_rate', 'comp3_rate', 'comp4_rate', 'comp5_rate', 'comp6_rate', 'comp7_rate',
                       'comp8_rate'], inplace=True)
+
+    df_['avg_rate_percent_diff'] = df_[['comp1_rate_percent_diff', 'comp2_rate_percent_diff', 'comp3_rate_percent_diff', 'comp4_rate_percent_diff', 'comp5_rate_percent_diff', 'comp6_rate_percent_diff', 'comp7_rate_percent_diff', 'comp8_rate_percent_diff']].mean(axis=1)
+    df_ = df_.fillna(value = {"avg_rate_percent_diff": 0})
+    df_.drop(columns=['comp1_rate_percent_diff', 'comp2_rate_percent_diff', 'comp3_rate_percent_diff', 'comp4_rate_percent_diff', 'comp5_rate_percent_diff', 'comp6_rate_percent_diff', 'comp7_rate_percent_diff', 'comp8_rate_percent_diff'], inplace=True)
+
 
 
     df_['roomcount_bookwindow'] = df_['srch_room_count']*max(df_['srch_booking_window']) + df_['srch_booking_window']
@@ -201,7 +291,7 @@ def add_extra_features(df_):
 
     df_['bool_same_country'] = 0
     df_.loc[(df_['visitor_location_country_id'] == df_['prop_country_id']), 'bool_same_country'] = 1
-    df_.drop(columns=['visitor_location_country_id'], inplace=True)
+    # df_.drop(columns=['visitor_location_country_id'], inplace=True)
 
 
     return df_
@@ -243,7 +333,7 @@ def assign_label(group):
     # Extract relevant columns
     booking_bool = group['booking_bool']
     click_bool = group['click_bool']
-    position = group['position']
+    position = group['estimated_position']
     random_bool = group['random_bool']
     num_positions = len(group)
 
@@ -257,13 +347,12 @@ def assign_label(group):
             labels.append(0)
 
     # Calculate remaining positions to assign labels 1 or 2
-    positions_with_label_3_or_4 = [p for p, label in zip(position, labels) if label in (3, 4)]
     num_assigned_3_or_4 = labels.count(3) + labels.count(4)
     num_remaining = num_positions - num_assigned_3_or_4
 
     if num_remaining > 0:
         # Distribute remaining labels evenly based on position
-        positions = sorted(set(position) - set(positions_with_label_3_or_4))
+        positions = sorted(set(position), reverse=True)
         num_labels_per_position = num_remaining // 3
         num_to_assigned = num_labels_per_position * 2
         assigned = 0
@@ -273,6 +362,8 @@ def assign_label(group):
             num_indices = len(p_indices)
 
             for ind in range(num_indices):
+                if booking_bool.iloc[p_indices[ind]] or click_bool.iloc[p_indices[ind]]:
+                    continue
                 labels[p_indices[ind]] = 2 if assigned < num_labels_per_position else 1
                 assigned += 1
                 if assigned >= num_to_assigned:
@@ -295,8 +386,8 @@ def obtain_estimated_postion(train_df_in):
     return srch_id_dest_id_dict
 
 def adjust_features(data_for_training):
-    data_for_training = add_extra_features(data_for_training)
     data_for_training = normalized_before_aggreation(data_for_training)
+    data_for_training = add_extra_features(data_for_training)
     data_for_training = normalized_after_aggreation(data_for_training)
     data_for_training = aggreated_columns(data_for_training)
     # data_for_training = data_for_training.sort_values("srch_id")
@@ -327,12 +418,12 @@ def load_train_eval_test_df(train_path, test_path):
 
     train_df, test_df = add_cb_bb_perc(train_df, test_df)
 
-    train_df = add_label(train_df)
-
     srch_id_dest_id_dict = obtain_estimated_postion(train_df)
 
     train_df = input_estimated_position(train_df, srch_id_dest_id_dict)
     test_df = input_estimated_position(test_df, srch_id_dest_id_dict)
+
+    train_df = add_label(train_df)
 
     train_df, scaler = scaler_fit(train_df)
     test_df[numerical_features + categorical_features]  = scaler.transform(test_df[numerical_features + categorical_features])
