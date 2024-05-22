@@ -148,8 +148,8 @@ def aggreated_columns(data_for_training):
     return data_for_training
 
 def fill_nan(df_):
-    df_['srch_query_affinity_score'] = np.exp(df_['srch_query_affinity_score'])
-    df_["srch_query_affinity_score"] = df_["srch_query_affinity_score"].fillna(0)
+    df_['srch_query_affinity_score'] = np.exp(df_['srch_query_affinity_score']) #this is in log terms originally, so we bring it back to normal counts
+    df_["srch_query_affinity_score"] = df_["srch_query_affinity_score"].fillna(0) #impute it to 0
 
     df_["orig_destination_distance"] = df_["orig_destination_distance"].replace(np.nan, df_[
         "orig_destination_distance"].quantile(0.75))
